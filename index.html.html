@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seguimiento Convenios — Abril 2026 | Payway</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #f8f7f4;
+  --surface: #ffffff;
+  --border: #e2ddd6;
+  --text: #1a1714;
+  --muted: #7a746c;
+  --accent: #c84b31;
+  --blue: #1e4d8c;
+  --green: #1a6b3a;
+  --amber: #b45309;
+  --conv: #1e4d8c;
+  --pl: #8b2fc9;
+  --ok: #1a6b3a;
+  --warn: #b45309;
+  --bad: #c84b31;
+  --ok-bg: #ecf7f0;
+  --warn-bg: #fef3e2;
+  --bad-bg: #fdf0ee;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.page { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+
+/* HEADER */
+.report-header {
+  border-bottom: 2px solid var(--text);
+  padding-bottom: 24px;
+  margin-bottom: 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.report-title { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; }
+.report-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.report-meta { text-align: right; font-size: 12px; color: var(--muted); }
+.report-meta strong { display: block; font-size: 15px; font-weight: 500; color: var(--text); }
+.accent-bar { height: 3px; background: var(--accent); width: 48px; margin-bottom: 8px; margin-left: auto; }
+
+/* SECTION */
+.section { margin-bottom: 56px; }
+.section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 20px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* KPI GRID */
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 32px; }
+.kpi {
+  background: var(--surface);
+  padding: 20px 24px;
+}
+.kpi-label { font-size: 11px; color: var(--muted); letter-spacing: 0.3px; margin-bottom: 8px; }
+.kpi-value { font-family: 'IBM Plex Mono', monospace; font-size: 26px; font-weight: 500; letter-spacing: -1px; line-height: 1; }
+.kpi-sub { font-size: 11px; color: var(--muted); margin-top: 6px; }
+.kpi-bar { height: 2px; background: var(--border); margin-top: 12px; }
+.kpi-fill { height: 100%; transition: width 1s ease; }
+.c-blue { color: var(--blue); }
+.c-purple { color: var(--pl); }
+.c-green { color: var(--green); }
+.c-muted { color: var(--muted); }
+
+/* TABLES */
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table thead th {
+  text-align: left;
+  padding: 8px 16px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+.data-table thead th.num { text-align: right; }
+.data-table tbody tr { border-bottom: 1px solid var(--border); }
+.data-table tbody tr:last-child { border-bottom: none; }
+.data-table tbody td { padding: 10px 16px; }
+.data-table tbody td.num { text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
+.data-table tbody tr:hover { background: var(--bg); }
+.table-wrap { border: 1px solid var(--border); }
+
+/* SCENARIO TABLE */
+.esc-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr; gap: 0; }
+.esc-header {
+  background: var(--bg);
+  padding: 8px 16px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+.esc-header.num { text-align: right; }
+.esc-cell { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 13px; font-family: 'IBM Plex Mono', monospace; text-align: right; }
+.esc-cell.label { font-family: 'IBM Plex Sans', monospace; font-weight: 500; text-align: left; }
+.esc-cell.base { font-weight: 600; color: var(--blue); background: #f0f4fa; }
+.esc-cell.opt { color: var(--green); }
+.esc-cell.con { color: var(--amber); }
+.esc-cell.lin { color: var(--muted); }
+.esc-cell.gap-pos { color: var(--green); font-weight: 600; }
+.esc-cell.gap-neg { color: var(--bad); font-weight: 600; }
+.esc-cell.gap-warn { color: var(--warn); font-weight: 600; }
+
+/* BADGES */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 2px; font-size: 11px; font-weight: 500; }
+.badge-ok { background: var(--ok-bg); color: var(--ok); }
+.badge-warn { background: var(--warn-bg); color: var(--warn); }
+.badge-bad { background: var(--bad-bg); color: var(--bad); }
+.badge-blue { background: #eef2fa; color: var(--blue); }
+
+/* CHART */
+.chart-wrap { height: 240px; position: relative; margin-bottom: 4px; }
+
+/* TWO COL */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+
+/* RISK SECTION */
+.risk-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
+.risk-number { font-family: 'IBM Plex Mono', monospace; font-size: 36px; font-weight: 500; color: var(--bad); }
+.risk-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* SEG BARS */
+.seg-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.seg-name { font-size: 13px; font-weight: 500; width: 80px; }
+.seg-bar-wrap { flex: 1; height: 8px; background: var(--border); border-radius: 1px; margin: 0 16px; overflow: hidden; }
+.seg-bar-fill { height: 100%; border-radius: 1px; }
+.seg-val { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted); width: 70px; text-align: right; }
+
+/* NOTE BOX */
+.note { background: var(--bg); border: 1px solid var(--border); border-left: 3px solid var(--muted); padding: 12px 16px; font-size: 12px; color: var(--muted); margin-top: 16px; line-height: 1.7; }
+.note strong { color: var(--text); }
+
+/* FOOTER */
+.report-footer {
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+  margin-top: 48px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* DIVIDER */
+.divider { height: 1px; background: var(--border); margin: 32px 0; }
+
+@media (max-width: 768px) {
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .two-col { grid-template-columns: 1fr; }
+  .esc-grid { grid-template-columns: 2fr 1fr 1fr 1fr; }
+  .esc-cell.lin, .esc-header:nth-child(5) { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="report-header">
+    <div>
+      <div class="report-title">Seguimiento Convenios Corporativos</div>
+      <div class="report-sub">Payway — Segmento Empresas &amp; Corporate · Adquirencia</div>
+    </div>
+    <div class="report-meta">
+      <div class="accent-bar"></div>
+      <strong>Abril 2026</strong>
+      Acumulado al 14/04/2026<br>
+      Día 14 de 30 &nbsp;·&nbsp; 47% del mes
+    </div>
+  </header>
+
+  <!-- 1. KPIs PRINCIPALES -->
+  <section class="section">
+    <div class="section-label">Volumen acumulado al 14/04</div>
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-label">Total financiado</div>
+        <div class="kpi-value">140.905<span style="font-size:16px;color:var(--muted)">M</span></div>
+        <div class="kpi-sub">ARS · Corporate + Small</div>
+        <div class="kpi-bar"><div class="kpi-fill" style="width:46%;background:var(--text)"></div></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Convenio Corporate</div>
+        <div class="kpi-value c-blue">92.513<span style="font-size:16px;color:var(--muted)">M</span></div>
+        <div class="kpi-sub">TPP 49,87% · Spread +0,87pp</div>
+        <div class="kpi-bar"><div class="kpi-fill" style="width:55%;background:var(--blue)"></div></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Fin. Payway Corporate</div>
+        <div class="kpi-value c-purple">13.418<span style="font-size:16px;color:var(--muted)">M</span></div>
+        <div class="kpi-sub">TNA lista 105%</div>
+        <div class="kpi-bar"><div class="kpi-fill" style="width:27%;background:var(--pl)"></div></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Avance del mes</div>
+        <div class="kpi-value c-green">47<span style="font-size:16px;color:var(--muted)">%</span></div>
+        <div class="kpi-sub">16 días hábiles restantes</div>
+        <div class="kpi-bar"><div class="kpi-fill" style="width:47%;background:var(--green)"></div></div>
+      </div>
+    </div>
+
+    <!-- Vol por segmento -->
+    <div style="margin-bottom:24px;">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Distribución por segmento</div>
+      <div class="seg-row">
+        <div class="seg-name">Large</div>
+        <div class="seg-bar-wrap"><div class="seg-bar-fill" style="width:100%;background:var(--blue)"></div></div>
+        <div class="seg-val">73.069M</div>
+      </div>
+      <div class="seg-row">
+        <div class="seg-name">Small</div>
+        <div class="seg-bar-wrap"><div class="seg-bar-fill" style="width:48%;background:#64748b"></div></div>
+        <div class="seg-val">34.973M</div>
+      </div>
+      <div class="seg-row">
+        <div class="seg-name">Medium</div>
+        <div class="seg-bar-wrap"><div class="seg-bar-fill" style="width:28%;background:#0369a1"></div></div>
+        <div class="seg-val">20.586M</div>
+      </div>
+      <div class="seg-row">
+        <div class="seg-name">Payfac</div>
+        <div class="seg-bar-wrap"><div class="seg-bar-fill" style="width:17%;background:#7c3aed"></div></div>
+        <div class="seg-val">12.278M</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. EVOLUCIÓN DIARIA -->
+  <section class="section">
+    <div class="section-label">Evolución diaria — Volumen en MM ARS</div>
+    <div class="chart-wrap">
+      <canvas id="chart-daily"></canvas>
+    </div>
+    <div class="note">
+      <strong>Derrame de fin de mes:</strong> el primer día hábil del mes concentra ~2x el volumen PL normal
+      (operaciones cursadas a fin del mes anterior que presentan al inicio del nuevo). El pico del 06/04 y del 13/04 corresponde
+      a semanas con acumulación de operaciones del fin de semana.
+    </div>
+  </section>
+
+  <!-- 3. PROYECCIÓN FIN DE MES -->
+  <section class="section">
+    <div class="section-label">Proyección fin de mes — Corporate (Base★ = proyección recomendada)</div>
+
+    <div style="margin-bottom:4px;">
+      <div class="esc-grid">
+        <!-- headers -->
+        <div class="esc-header">Línea</div>
+        <div class="esc-header num">Real acum.</div>
+        <div class="esc-header num" style="color:var(--green)">Optimista</div>
+        <div class="esc-header num" style="color:var(--blue)">★ Base</div>
+        <div class="esc-header num" style="color:var(--amber)">Conservadora</div>
+        <div class="esc-header num">Budget</div>
+        <div class="esc-header num">Gap Base★</div>
+
+        <!-- Convenio Corporate -->
+        <div class="esc-cell label" style="border-left:3px solid var(--blue)">Convenio Corporate</div>
+        <div class="esc-cell c-blue" style="font-weight:600">92.513M</div>
+        <div class="esc-cell opt">196.385M</div>
+        <div class="esc-cell base">180.972M</div>
+        <div class="esc-cell con">158.956M</div>
+        <div class="esc-cell c-muted">168.000M</div>
+        <div class="esc-cell gap-pos">+12.972M</div>
+
+        <!-- PL Corporate -->
+        <div class="esc-cell label" style="border-left:3px solid var(--pl)">Fin. Payway Corporate</div>
+        <div class="esc-cell" style="color:var(--pl);font-weight:600">13.418M</div>
+        <div class="esc-cell opt">37.272M</div>
+        <div class="esc-cell base">29.081M</div>
+        <div class="esc-cell con">24.848M</div>
+        <div class="esc-cell c-muted">50.000M</div>
+        <div class="esc-cell gap-neg">−20.919M</div>
+
+        <!-- Total -->
+        <div class="esc-cell label" style="background:var(--bg);font-weight:600">Total Corporate</div>
+        <div class="esc-cell" style="background:var(--bg);font-weight:600">105.931M</div>
+        <div class="esc-cell opt" style="background:var(--bg)">233.657M</div>
+        <div class="esc-cell base" style="background:#f0f4fa;font-weight:700">210.053M</div>
+        <div class="esc-cell con" style="background:var(--bg)">183.804M</div>
+        <div class="esc-cell c-muted" style="background:var(--bg)">218.000M</div>
+        <div class="esc-cell gap-neg" style="background:var(--bg)">−7.947M</div>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Metodología:</strong> Proyección Base★ = volumen acumulado ÷ factor histórico ponderado (15 meses, Ene-25 → Mar-26).
+      Factor Convenio Corporate día 14: 0,5112 (promedio histórico de cuánto del total mensual se acumula al día 14).
+      Optimista = percentil 25 histórico (meses donde el inicio fue más lento) · Conservadora = percentil 75.
+    </div>
+  </section>
+
+  <!-- 4. CUMPLIMIENTO -->
+  <section class="section">
+    <div class="section-label">Cumplimiento vs budget — Proyección Base★</div>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Segmento</th>
+            <th>Línea</th>
+            <th class="num">Budget</th>
+            <th class="num">Real acum.</th>
+            <th class="num">% avance</th>
+            <th class="num">Proy. Base★</th>
+            <th class="num">Gap vs Budget</th>
+            <th class="num">TPP real</th>
+            <th class="num">Spread</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:600;color:var(--blue)">Corporate</td>
+            <td style="color:var(--blue)">Convenio</td>
+            <td class="num">168.000M</td>
+            <td class="num" style="font-weight:600;color:var(--blue)">92.513M</td>
+            <td class="num">55%</td>
+            <td class="num" style="font-weight:600;color:var(--blue)">180.972M</td>
+            <td class="num"><span class="badge badge-ok">+12.972M</span></td>
+            <td class="num">49,87%</td>
+            <td class="num">+0,87pp</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="color:var(--pl)">Fin. Payway</td>
+            <td class="num">50.000M</td>
+            <td class="num" style="font-weight:600;color:var(--pl)">13.418M</td>
+            <td class="num">27%</td>
+            <td class="num" style="font-weight:600;color:var(--pl)">29.081M</td>
+            <td class="num"><span class="badge badge-bad">−20.919M</span></td>
+            <td class="num">105,0%</td>
+            <td class="num">+56pp</td>
+          </tr>
+          <tr style="background:var(--bg)">
+            <td></td>
+            <td style="font-weight:600">Total Corporate</td>
+            <td class="num" style="font-weight:600">218.000M</td>
+            <td class="num" style="font-weight:600">105.931M</td>
+            <td class="num" style="font-weight:600">49%</td>
+            <td class="num" style="font-weight:600">210.053M</td>
+            <td class="num"><span class="badge badge-warn">−7.947M</span></td>
+            <td class="num">—</td>
+            <td class="num">—</td>
+          </tr>
+          <tr>
+            <td style="font-weight:600;color:#0891b2">Small</td>
+            <td style="color:#0891b2">Convenio</td>
+            <td class="num">20.132M</td>
+            <td class="num" style="font-weight:600;color:#0891b2">9.093M</td>
+            <td class="num">45%</td>
+            <td class="num" style="font-weight:600;color:#0891b2">17.785M</td>
+            <td class="num"><span class="badge badge-warn">−2.347M</span></td>
+            <td class="num">22,56%</td>
+            <td class="num">−26,44pp</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="color:var(--pl)">Fin. Payway</td>
+            <td class="num">66.205M</td>
+            <td class="num" style="font-weight:600;color:var(--pl)">25.880M</td>
+            <td class="num">39%</td>
+            <td class="num" style="font-weight:600;color:var(--pl)">56.099M</td>
+            <td class="num"><span class="badge badge-bad">−10.106M</span></td>
+            <td class="num">105,0%</td>
+            <td class="num">+56pp</td>
+          </tr>
+          <tr style="background:#1a1714;color:white">
+            <td style="color:white;font-weight:600">TOTAL</td>
+            <td style="color:#aaa">General</td>
+            <td class="num" style="color:white;font-weight:600">304.337M</td>
+            <td class="num" style="color:white;font-weight:600">140.905M</td>
+            <td class="num" style="color:white;font-weight:600">46%</td>
+            <td class="num" style="color:white;font-weight:600">284.017M</td>
+            <td class="num"><span class="badge badge-bad" style="background:#7f1d1d">−20.320M</span></td>
+            <td class="num" style="color:#aaa">—</td>
+            <td class="num" style="color:#aaa">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <strong>Interpretación del gap:</strong> El Convenio Corporate proyecta superar el budget (+13M), compensado parcialmente por
+      Fin. Payway Corporate que está significativamente por debajo (−21M). El gap total de −20M refleja
+      un ritmo de Fin. Payway por debajo del presupuesto — los clientes están priorizando el uso de líneas
+      de convenio antes de agotar el cupo y migrar a precio de lista.
+    </div>
+  </section>
+
+  <!-- 5. FOTO CONVENIO -->
+  <section class="section">
+    <div class="section-label">Condiciones vigentes — Foto Convenio al 15/04/2026</div>
+
+    <div class="two-col" style="margin-bottom:32px;">
+      <div>
+        <div class="kpi-label" style="margin-bottom:12px">Estado de condiciones aprobadas (Corporate)</div>
+        <table style="width:100%;font-size:13px;border-collapse:collapse;">
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:10px 0;color:var(--muted)">Ejecutado (Foto Convenio)</td>
+            <td style="padding:10px 0;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--blue)">86.327M</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:10px 0;color:var(--muted)">Ref. Lineas Mensuales</td>
+            <td style="padding:10px 0;text-align:right;font-family:'IBM Plex Mono',monospace;color:var(--muted)">92.513M</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:10px 0;color:var(--muted)">TPP ponderada del ejecutado</td>
+            <td style="padding:10px 0;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:600">49,23%</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:10px 0;color:var(--muted)">Cupo remanente vigente (hasta fin de mes)</td>
+            <td style="padding:10px 0;text-align:right;font-family:'IBM Plex Mono',monospace;color:var(--blue)">144.155M</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 0;color:var(--muted)">TPP del remanente</td>
+            <td style="padding:10px 0;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--green)">63,28%</td>
+          </tr>
+        </table>
+        <div class="note" style="margin-top:12px">
+          <strong>TPP del remanente > TPP del ejecutado:</strong> las condiciones aprobadas disponibles
+          (63,3%) son mejores que las ya ejecutadas (49,2%). Nuevas ejecuciones mejorarán la TPP global.
+        </div>
+      </div>
+      <div>
+        <div class="kpi-label" style="margin-bottom:12px">Riesgo de compresión de TPP</div>
+        <div class="risk-number">691.096<span style="font-size:18px">M</span></div>
+        <div class="risk-label">Remanente vigente con TNA por debajo de TT (49%)</div>
+        <div style="margin-top:16px;font-size:12px;color:var(--muted)">
+          Si se ejecutara <em>todo</em> el remanente bajo TT, la TPP
+          del Convenio Corporate bajaría aproximadamente <strong style="color:var(--bad)">−5,2pp</strong>
+          desde el nivel actual (49,87% → ~44,7%). En la práctica, la utilización
+          histórica sugiere que no se consume todo.
+        </div>
+        <div style="margin-top:16px">
+          <span class="badge badge-blue">1,5% del remanente total está bajo TT</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top 10 convenios en riesgo -->
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">
+      Top 10 convenios con remanente vigente bajo TT — mayor exposición a compresión de spread
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Convenio</th>
+            <th class="num">Remanente (MM)</th>
+            <th class="num">TNA pond.</th>
+            <th class="num">Spread vs TT</th>
+            <th class="num">CUITs</th>
+            <th class="num">Vence</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>Good Year TL TNA 44 PP1</td><td class="num">100.799M</td><td class="num">45,0%</td><td class="num" style="color:var(--warn)">−4,0pp</td><td class="num">40</td><td class="num"><span class="badge badge-ok">30/04</span></td></tr>
+          <tr><td>2</td><td>Good Year TC TNA 44 PP1</td><td class="num">100.787M</td><td class="num">45,0%</td><td class="num" style="color:var(--warn)">−4,0pp</td><td class="num">40</td><td class="num"><span class="badge badge-ok">30/04</span></td></tr>
+          <tr><td>3</td><td>Sherwin</td><td class="num">94.352M</td><td class="num">45,0%</td><td class="num" style="color:var(--warn)">−4,0pp</td><td class="num">118</td><td class="num"><span class="badge badge-warn">20/04</span></td></tr>
+          <tr><td>4</td><td>Goodyear Quickwin</td><td class="num">73.000M</td><td class="num">42,0%</td><td class="num" style="color:var(--bad)">−7,0pp</td><td class="num">73</td><td class="num"><span class="badge badge-ok">30/04</span></td></tr>
+          <tr><td>5</td><td>Michelin Quickwin</td><td class="num">56.000M</td><td class="num">42,0%</td><td class="num" style="color:var(--bad)">−7,0pp</td><td class="num">56</td><td class="num"><span class="badge badge-ok">30/04</span></td></tr>
+          <tr><td>6</td><td>Pirelli Quickwin</td><td class="num">46.000M</td><td class="num">42,0%</td><td class="num" style="color:var(--bad)">−7,0pp</td><td class="num">46</td><td class="num"><span class="badge badge-ok">30/04</span></td></tr>
+          <tr><td>7</td><td>Fravega</td><td class="num">28.791M</td><td class="num">39,9%</td><td class="num" style="color:var(--bad)">−9,1pp</td><td class="num">1</td><td class="num"><span class="badge badge-ok">30/04</span></td></tr>
+          <tr><td>8</td><td>Gimnasios Argentinos SA</td><td class="num">13.793M</td><td class="num">42,8%</td><td class="num" style="color:var(--bad)">−6,2pp</td><td class="num">7</td><td class="num"><span class="badge badge-ok">30/04</span></td></tr>
+          <tr><td>9</td><td>Carrefour</td><td class="num">13.191M</td><td class="num">40,0%</td><td class="num" style="color:var(--bad)">−9,0pp</td><td class="num">1</td><td class="num"><span class="badge badge-ok">30/04</span></td></tr>
+          <tr><td>10</td><td>Sellers MKP Personal</td><td class="num">9.988M</td><td class="num">45,0%</td><td class="num" style="color:var(--warn)">−4,0pp</td><td class="num">10</td><td class="num"><span class="badge badge-ok">30/04</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">
+      Solo se listan convenios vigentes desde el 15/04. <strong>Sherwin</strong> vence el 20/04 — riesgo
+      acotado a 5 días. Los convenios de neumáticos (Good Year, Michelin, Pirelli) concentran el mayor
+      volumen de remanente bajo TT pero su TNA (42–45%) está relativamente cerca del piso.
+      El impacto individual más agresivo es <strong>Fravega</strong> (−9,1pp de spread) aunque su
+      volumen es menor que las cadenas de neumáticos.
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="report-footer">
+    <div>Payway · Propuesta de Valor Corporativo · Uso interno</div>
+    <div>Datos: Convenio Líneas Mensuales + Foto Convenio · Generado 16/04/2026</div>
+  </footer>
+
+</div>
+
+<script>
+const fechas = ['01/04','06/04','07/04','08/04','09/04','10/04','13/04','14/04'];
+const conv   = [7358, 33920, 6119, 9117, 7232, 7191, 24070, 6598];
+const pl     = [3603, 11226, 2972, 3071, 3441, 3338, 8344, 3304];
+
+const ctx = document.getElementById('chart-daily').getContext('2d');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: fechas,
+    datasets: [
+      {
+        label: 'Convenio',
+        data: conv,
+        backgroundColor: 'rgba(30,77,140,0.75)',
+        borderRadius: 2,
+        borderSkipped: false,
+      },
+      {
+        label: 'Fin. Payway',
+        data: pl,
+        backgroundColor: 'rgba(139,47,201,0.65)',
+        borderRadius: 2,
+        borderSkipped: false,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+        align: 'end',
+        labels: {
+          color: '#7a746c',
+          font: { family: 'IBM Plex Sans', size: 11 },
+          padding: 16,
+          boxWidth: 10,
+          boxHeight: 10,
+        }
+      },
+      tooltip: {
+        backgroundColor: '#1a1714',
+        borderColor: '#3a3530',
+        borderWidth: 1,
+        titleColor: '#f8f7f4',
+        bodyColor: '#9a9490',
+        callbacks: {
+          label: ctx => ` ${ctx.dataset.label}: ${new Intl.NumberFormat('es-AR').format(ctx.parsed.y)}M`
+        }
+      }
+    },
+    scales: {
+      x: {
+        stacked: true,
+        ticks: { color: '#7a746c', font: { family: 'IBM Plex Sans', size: 11 } },
+        grid: { display: false },
+        border: { display: false }
+      },
+      y: {
+        stacked: true,
+        ticks: {
+          color: '#7a746c',
+          font: { family: 'IBM Plex Sans', size: 11 },
+          callback: v => new Intl.NumberFormat('es-AR').format(v) + 'M'
+        },
+        grid: { color: 'rgba(0,0,0,0.06)' },
+        border: { display: false }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
